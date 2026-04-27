@@ -16,6 +16,9 @@ php artisan migrate --force
 echo "==> Demo data..."
 php artisan autoafrik:ensure-demo
 
+echo "==> Super admin..."
+php artisan autoafrik:ensure-super-admin
+
 echo "==> Storage link..."
 php artisan storage:link || true
 

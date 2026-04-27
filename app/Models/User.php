@@ -32,7 +32,8 @@ class User extends Authenticatable
     }
 
     public static array $roles = [
-        'owner'        => ['label' => 'Propriétaire',  'color' => '#8B5CF6', 'icon' => 'fa-crown'],
+        'super_admin'  => ['label' => 'Super Admin',    'color' => '#DC2626', 'icon' => 'fa-user-shield'],
+        'owner'        => ['label' => 'Propriétaire',   'color' => '#8B5CF6', 'icon' => 'fa-crown'],
         'admin'        => ['label' => 'Administrateur', 'color' => '#0D1B3E', 'icon' => 'fa-shield'],
         'manager'      => ['label' => 'Manager',        'color' => '#3B82F6', 'icon' => 'fa-briefcase'],
         'mechanic'     => ['label' => 'Mécanicien',     'color' => '#F97316', 'icon' => 'fa-wrench'],
@@ -52,7 +53,6 @@ class User extends Authenticatable
 
     public function getAllowedViewsAttribute(): array
     {
-        // Custom permissions override role defaults
         if (!empty($this->permissions)) {
             return $this->permissions;
         }
@@ -69,9 +69,10 @@ class User extends Authenticatable
         return self::$roles[$this->role] ?? self::$roles['mechanic'];
     }
 
-    public function isOwner(): bool   { return $this->role === 'owner'; }
-    public function isAdmin(): bool   { return in_array($this->role, ['owner', 'admin']); }
-    public function canManage(): bool { return in_array($this->role, ['owner', 'admin', 'manager']); }
+    public function isSuperAdmin(): bool { return $this->role === 'super_admin'; }
+    public function isOwner(): bool      { return $this->role === 'owner'; }
+    public function isAdmin(): bool      { return in_array($this->role, ['owner', 'admin']); }
+    public function canManage(): bool    { return in_array($this->role, ['owner', 'admin', 'manager']); }
 
     public function company(): BelongsTo
     {

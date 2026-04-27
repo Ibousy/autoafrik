@@ -308,8 +308,12 @@ tbody tr:last-child td{border-bottom:none}
         <i class="fas fa-clock"></i> Essai gratuit
       </div>
       <div style="font-size:11px;color:rgba(255,255,255,.5)">{{ $company->trialDaysLeft() }} jours restants</div>
-      <div onclick="showView('parametres', document.querySelector('.nav-item[onclick*=parametres]'))" style="font-size:11px;color:var(--orange);font-weight:600;cursor:pointer;margin-top:4px">Passer au Pro →</div>
+      <a href="{{ route('renewal.show') }}" style="font-size:11px;color:var(--orange);font-weight:600;cursor:pointer;margin-top:4px;display:block">Passer au Pro →</a>
     </div>
+    @elseif($company && $u->isAdmin())
+    <a href="{{ route('renewal.show') }}" style="display:flex;align-items:center;gap:7px;padding:8px 10px;background:rgba(249,115,22,.1);border-radius:9px;margin-bottom:10px;border:1px solid rgba(249,115,22,.15);font-size:12px;color:#fb923c;font-weight:600;text-decoration:none">
+      <i class="fas fa-sync-alt"></i> Renouveler l'abonnement
+    </a>
     @endif
     <div class="sb-user">
       <div class="av" style="background:linear-gradient(135deg,var(--orange),#fb923c)">
