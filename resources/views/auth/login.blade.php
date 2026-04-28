@@ -2,7 +2,7 @@
 <html lang="fr">
 <head>
 <meta charset="UTF-8">
-<title>GaragePro Afrique — Connexion</title>
+<title>AutoAfrik — Connexion</title>
 <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&display=swap" rel="stylesheet">
 <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.0/css/all.min.css">
 <style>
@@ -57,8 +57,8 @@ body{font-family:'Inter',sans-serif;min-height:100vh;display:flex;background:#F1
   <div class="logo-wrap">
     <div class="logo-icon"><i class="fas fa-car"></i></div>
     <div class="logo-text">
-      <strong>GaragePro</strong>
-      <span>Afrique</span>
+      <strong>AutoAfrik</strong>
+      <span>Gestion de garage</span>
     </div>
   </div>
 
@@ -73,7 +73,7 @@ body{font-family:'Inter',sans-serif;min-height:100vh;display:flex;background:#F1
     </div>
   </div>
 
-  <div class="left-footer">© 2026 GaragePro Afrique · Tous droits réservés</div>
+  <div class="left-footer">© {{ date('Y') }} AutoAfrik · Tous droits réservés</div>
 </div>
 
 <div class="right">
@@ -120,20 +120,7 @@ body{font-family:'Inter',sans-serif;min-height:100vh;display:flex;background:#F1
       </button>
     </form>
 
-    <div class="divider"><span>Identifiants de démonstration</span></div>
-
-    <div class="demo-creds">
-      <p>Accès rapide</p>
-      <div class="demo-cred">
-        <i class="fas fa-user-shield" style="color:#0D1B3E;font-size:13px"></i>
-        <span>admin@garagepro.sn</span>
-        <span class="copy" onclick="fillLogin('admin@garagepro.sn')">Utiliser</span>
-      </div>
-      <div class="demo-cred">
-        <i class="fas fa-key" style="color:#64748B;font-size:13px"></i>
-        <span>password</span>
-      </div>
-    <p style="text-align:center;margin-top:20px;font-size:13.5px;color:#64748B">
+    <p style="text-align:center;margin-top:24px;font-size:13.5px;color:#64748B">
       Pas encore de compte ? <a href="{{ route('register') }}" style="color:#F97316;font-weight:600;text-decoration:none">Créer mon garage</a>
     </p>
   </div>
