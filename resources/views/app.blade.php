@@ -256,6 +256,11 @@ tbody tr:last-child td{border-bottom:none}
     <span class="badge" id="badge-repairs">{{ $stats['repairs_in_progress'] }}</span>
   </div>
   @endif
+  @if($u->canView('entretien'))
+  <div class="nav-item" data-view="entretien" onclick="showView('entretien',this)">
+    <i class="fas fa-oil-can nav-icon"></i> Entretien
+  </div>
+  @endif
   @if($u->canView('locations'))
   <div class="nav-item" data-view="locations" onclick="showView('locations',this)">
     <i class="fas fa-key nav-icon"></i> Locations
@@ -555,6 +560,57 @@ tbody tr:last-child td{border-bottom:none}
         <div class="k-col"><div class="k-col-header"><span class="k-col-title" style="color:var(--warning)">En attente</span><div class="k-count" style="background:var(--warning)" id="k-pending-count">0</div></div><div id="k-pending"><div style="text-align:center;padding:24px;color:var(--muted)"><i class="fas fa-spinner fa-spin"></i></div></div></div>
         <div class="k-col"><div class="k-col-header"><span class="k-col-title" style="color:var(--info)">En cours</span><div class="k-count" style="background:var(--info)" id="k-inprogress-count">0</div></div><div id="k-inprogress"></div></div>
         <div class="k-col"><div class="k-col-header"><span class="k-col-title" style="color:var(--success)">Terminé</span><div class="k-count" style="background:var(--success)" id="k-done-count">0</div></div><div id="k-done"></div></div>
+      </div>
+    </div>
+
+    <!-- ═══ ENTRETIEN ═══ -->
+    <div class="view" id="view-entretien">
+      <div class="sec-header">
+        <div><h2>Entretien</h2><p>Planification et suivi des entretiens</p></div>
+        <button class="btn btn-orange" onclick="openEntretienModal()"><i class="fas fa-plus"></i> Planifier un entretien</button>
+      </div>
+      <div class="kpi-grid" style="grid-template-columns:repeat(4,1fr);margin-bottom:20px">
+        <div class="kpi blue"><div class="kpi-header"><div class="kpi-icon"><i class="fas fa-list"></i></div></div><div class="kpi-value" id="stat-ent-total">—</div><div class="kpi-label">Total</div></div>
+        <div class="kpi info"><div class="kpi-header"><div class="kpi-icon"><i class="fas fa-calendar-check"></i></div></div><div class="kpi-value" id="stat-ent-planifie">—</div><div class="kpi-label">Planifiés</div></div>
+        <div class="kpi orange"><div class="kpi-header"><div class="kpi-icon"><i class="fas fa-spinner"></i></div></div><div class="kpi-value" id="stat-ent-encours">—</div><div class="kpi-label">En cours</div></div>
+        <div class="kpi green"><div class="kpi-header"><div class="kpi-icon"><i class="fas fa-check-double"></i></div></div><div class="kpi-value" id="stat-ent-termine">—</div><div class="kpi-label">Terminés ce mois</div></div>
+      </div>
+      <!-- Filters -->
+      <div class="card mb24" style="padding:14px 20px">
+        <div style="display:flex;align-items:center;gap:12px;flex-wrap:wrap">
+          <select class="form-control" style="width:180px" id="ent-filter-status" onchange="loadMaintenances()">
+            <option value="">Tous les statuts</option>
+            <option value="planifie">Planifié</option>
+            <option value="en_cours">En cours</option>
+            <option value="termine">Terminé</option>
+            <option value="annule">Annulé</option>
+          </select>
+          <select class="form-control" style="width:200px" id="ent-filter-type" onchange="loadMaintenances()">
+            <option value="">Tous les types</option>
+            <option value="vidange">Vidange / Huile</option>
+            <option value="revision">Révision complète</option>
+            <option value="controle_technique">Contrôle technique</option>
+            <option value="pneumatiques">Pneumatiques</option>
+            <option value="freins">Freins</option>
+            <option value="batterie">Batterie</option>
+            <option value="courroie">Courroie</option>
+            <option value="filtre">Filtres</option>
+            <option value="climatisation">Climatisation</option>
+            <option value="geometrie">Géométrie</option>
+            <option value="autre">Autre</option>
+          </select>
+          <button class="btn btn-outline btn-sm" onclick="document.getElementById('ent-filter-status').value='';document.getElementById('ent-filter-type').value='';loadMaintenances()">
+            <i class="fas fa-times"></i> Réinitialiser
+          </button>
+        </div>
+      </div>
+      <div class="card">
+        <div class="tbl-wrap">
+          <table id="entretien-table">
+            <thead><tr><th>Date prévue</th><th>Type</th><th>Description</th><th>Véhicule</th><th>Client</th><th>Kilométrage</th><th>Coût</th><th>Statut</th><th>Actions</th></tr></thead>
+            <tbody id="entretien-tbody"><tr><td colspan="9" style="text-align:center;padding:32px;color:var(--muted)"><i class="fas fa-spinner fa-spin"></i></td></tr></tbody>
+          </table>
+        </div>
       </div>
     </div>
 
@@ -1032,6 +1088,90 @@ tbody tr:last-child td{border-bottom:none}
     </div>
   </div>
 
+  <!-- ENTRETIEN -->
+  <div class="modal" id="modal-entretien">
+    <div class="modal-header">
+      <h3 id="modal-entretien-title">Planifier un entretien</h3>
+      <button class="modal-close" onclick="closeModal()"><i class="fas fa-times"></i></button>
+    </div>
+    <div class="modal-body">
+      <input type="hidden" id="ent-id">
+      <div class="form-row">
+        <div class="form-group">
+          <label class="form-label">Type d'entretien *</label>
+          <select class="form-control" id="ent-type">
+            <option value="vidange">Vidange / Huile</option>
+            <option value="revision">Révision complète</option>
+            <option value="controle_technique">Contrôle technique</option>
+            <option value="pneumatiques">Pneumatiques</option>
+            <option value="freins">Freins</option>
+            <option value="batterie">Batterie</option>
+            <option value="courroie">Courroie / Distribution</option>
+            <option value="filtre">Filtres</option>
+            <option value="climatisation">Climatisation</option>
+            <option value="geometrie">Géométrie</option>
+            <option value="autre">Autre</option>
+          </select>
+        </div>
+        <div class="form-group">
+          <label class="form-label">Statut</label>
+          <select class="form-control" id="ent-status">
+            <option value="planifie">Planifié</option>
+            <option value="en_cours">En cours</option>
+            <option value="termine">Terminé</option>
+            <option value="annule">Annulé</option>
+          </select>
+        </div>
+      </div>
+      <div class="form-group">
+        <label class="form-label">Description</label>
+        <input class="form-control" id="ent-description" placeholder="Détail de l'intervention">
+      </div>
+      <div class="form-row">
+        <div class="form-group">
+          <label class="form-label">Véhicule</label>
+          <select class="form-control" id="ent-vehicle_id">
+            <option value="">— Sélectionner —</option>
+          </select>
+        </div>
+        <div class="form-group">
+          <label class="form-label">Client</label>
+          <select class="form-control" id="ent-client_id">
+            <option value="">— Sélectionner —</option>
+          </select>
+        </div>
+      </div>
+      <div class="form-row">
+        <div class="form-group">
+          <label class="form-label">Date prévue *</label>
+          <input class="form-control" id="ent-scheduled_at" type="date">
+        </div>
+        <div class="form-group">
+          <label class="form-label">Date de réalisation</label>
+          <input class="form-control" id="ent-completed_at" type="date">
+        </div>
+      </div>
+      <div class="form-row">
+        <div class="form-group">
+          <label class="form-label">Kilométrage</label>
+          <input class="form-control" id="ent-mileage" type="number" min="0" placeholder="km">
+        </div>
+        <div class="form-group">
+          <label class="form-label">Coût (FCFA)</label>
+          <input class="form-control" id="ent-cost" type="number" min="0" placeholder="0">
+        </div>
+      </div>
+      <div class="form-group">
+        <label class="form-label">Notes</label>
+        <textarea class="form-control" id="ent-notes" rows="3" placeholder="Observations, remarques…"></textarea>
+      </div>
+    </div>
+    <div class="modal-footer">
+      <button class="btn btn-outline" onclick="closeModal()">Annuler</button>
+      <button class="btn btn-orange" onclick="saveEntretien()"><i class="fas fa-save"></i> Enregistrer</button>
+    </div>
+  </div>
+
   <!-- EMPLOYEE -->
   <div class="modal" id="modal-employee">
     <div class="modal-header">
@@ -1273,6 +1413,7 @@ const pageTitles = {
   clients:      ['Clients',               'Gestion du portefeuille clients'],
   vehicules:    ['Véhicules',             'Parc automobile'],
   reparations:  ['Réparations',           'Ordres de travaux'],
+  entretien:    ['Entretien',             'Planification et suivi des entretiens'],
   locations:    ['Locations',             'Gestion du parc de location'],
   stock:        ['Stock & Pièces',        "Gestion de l'inventaire"],
   comptabilite: ['Comptabilité',          'Suivi financier — ' + new Date().toLocaleString('fr', {month:'long', year:'numeric'})],
@@ -1336,6 +1477,7 @@ function loadView(id) {
     case 'clients':      loadClients(); loadClientStats(); break;
     case 'vehicules':    loadVehicles(); break;
     case 'reparations':  loadRepairs(); loadRepairStats(); break;
+    case 'entretien':    loadMaintenances(); break;
     case 'locations':    loadRentals(); loadRentalStats(); break;
     case 'stock':        loadStock(); loadStockStats(); break;
     case 'comptabilite': loadCompta(); loadTransactionsList(); break;
@@ -1344,6 +1486,132 @@ function loadView(id) {
     case 'equipe':       loadAgents(); break;
     case 'parametres':   loadCompanySettings(); break;
   }
+}
+
+// ── ENTRETIEN
+let _entVehicles = [], _entClients = [];
+
+async function loadMaintenances() {
+  const status = document.getElementById('ent-filter-status')?.value ?? '';
+  const type   = document.getElementById('ent-filter-type')?.value ?? '';
+  let url = 'maintenances';
+  const params = [];
+  if (status) params.push('status=' + status);
+  if (type)   params.push('type='   + type);
+  if (params.length) url += '?' + params.join('&');
+
+  const d = await api(url);
+  if (!d.maintenances) return;
+
+  // Stats
+  if (d.stats) {
+    document.getElementById('stat-ent-total').textContent   = d.stats.total;
+    document.getElementById('stat-ent-planifie').textContent = d.stats.planifie;
+    document.getElementById('stat-ent-encours').textContent  = d.stats.en_cours;
+    document.getElementById('stat-ent-termine').textContent  = d.stats.termine;
+  }
+
+  const rows = d.maintenances;
+  document.getElementById('entretien-tbody').innerHTML = rows.length === 0
+    ? `<tr><td colspan="9" style="text-align:center;padding:32px;color:var(--muted)">Aucun entretien enregistré</td></tr>`
+    : rows.map(m => `
+      <tr>
+        <td>${m.scheduled_at ?? '—'}</td>
+        <td>
+          <span style="display:inline-flex;align-items:center;gap:6px">
+            <i class="fas ${m.type_icon}" style="color:${m.type_color}"></i>
+            ${m.type_label}
+          </span>
+        </td>
+        <td style="max-width:180px;white-space:nowrap;overflow:hidden;text-overflow:ellipsis">${m.description || '—'}</td>
+        <td>${m.vehicle ? `<span>${m.vehicle.label}</span><br><small style="color:var(--muted)">${m.vehicle.registration}</small>` : '—'}</td>
+        <td>${m.client ? m.client.name : '—'}</td>
+        <td>${m.mileage ? fmt(m.mileage) + ' km' : '—'}</td>
+        <td>${m.cost ? fmt(m.cost) + ' FCFA' : '—'}</td>
+        <td><span class="badge" style="background:${m.status_bg};color:${m.status_color}">${m.status_label}</span></td>
+        <td>
+          <button class="btn btn-ghost btn-sm" onclick="editEntretien(${m.id})" title="Modifier"><i class="fas fa-edit" style="color:var(--info)"></i></button>
+          <button class="btn btn-ghost btn-sm" onclick="deleteEntretien(${m.id})" title="Supprimer"><i class="fas fa-trash" style="color:var(--danger)"></i></button>
+        </td>
+      </tr>`).join('');
+}
+
+async function _loadEntDropdowns() {
+  if (_entVehicles.length === 0) {
+    const vd = await api('maintenances/vehicles-list');
+    _entVehicles = vd.vehicles ?? [];
+  }
+  if (_entClients.length === 0) {
+    const cd = await api('maintenances/clients-list');
+    _entClients = cd.clients ?? [];
+  }
+  const vSel = document.getElementById('ent-vehicle_id');
+  const cSel = document.getElementById('ent-client_id');
+  vSel.innerHTML = '<option value="">— Véhicule —</option>' + _entVehicles.map(v => `<option value="${v.id}">${v.make} ${v.model} (${v.registration})</option>`).join('');
+  cSel.innerHTML = '<option value="">— Client —</option>' + _entClients.map(c => `<option value="${c.id}">${c.name}</option>`).join('');
+}
+
+let _entEditId = null;
+
+function openEntretienModal(m = null) {
+  _entEditId = m ? m.id : null;
+  document.getElementById('modal-entretien-title').textContent = m ? 'Modifier l\'entretien' : 'Planifier un entretien';
+  document.getElementById('ent-id').value           = m?.id ?? '';
+  document.getElementById('ent-type').value         = m?.type ?? 'vidange';
+  document.getElementById('ent-status').value       = m?.status ?? 'planifie';
+  document.getElementById('ent-description').value  = m?.description ?? '';
+  document.getElementById('ent-scheduled_at').value = m?.scheduled_at ?? '';
+  document.getElementById('ent-completed_at').value = m?.completed_at ?? '';
+  document.getElementById('ent-mileage').value      = m?.mileage ?? '';
+  document.getElementById('ent-cost').value         = m?.cost ?? '';
+  document.getElementById('ent-notes').value        = m?.notes ?? '';
+  _loadEntDropdowns().then(() => {
+    if (m?.vehicle) document.getElementById('ent-vehicle_id').value = m.vehicle.id;
+    if (m?.client)  document.getElementById('ent-client_id').value  = m.client.id;
+  });
+  openModal('modal-entretien');
+}
+
+let _entCache = {};
+
+async function editEntretien(id) {
+  if (!_entCache[id]) {
+    const d = await api('maintenances');
+    (d.maintenances ?? []).forEach(m => _entCache[m.id] = m);
+  }
+  const m = _entCache[id];
+  if (m) openEntretienModal(m);
+}
+
+async function saveEntretien() {
+  const id = document.getElementById('ent-id').value;
+  const payload = {
+    type:         document.getElementById('ent-type').value,
+    status:       document.getElementById('ent-status').value,
+    description:  document.getElementById('ent-description').value || null,
+    vehicle_id:   document.getElementById('ent-vehicle_id').value || null,
+    client_id:    document.getElementById('ent-client_id').value  || null,
+    scheduled_at: document.getElementById('ent-scheduled_at').value,
+    completed_at: document.getElementById('ent-completed_at').value || null,
+    mileage:      document.getElementById('ent-mileage').value || null,
+    cost:         document.getElementById('ent-cost').value || null,
+    notes:        document.getElementById('ent-notes').value || null,
+  };
+  const method = id ? 'PATCH' : 'POST';
+  const url    = id ? `maintenances/${id}` : 'maintenances';
+  const d = await api(url, { method, body: JSON.stringify(payload) });
+  if (d.maintenance) {
+    _entCache = {};
+    closeModal();
+    loadMaintenances();
+  }
+}
+
+async function deleteEntretien(id) {
+  if (!confirm('Supprimer cet entretien ?')) return;
+  await api(`maintenances/${id}`, { method: 'DELETE' });
+  _entCache = {};
+  loadMaintenances();
 }
 
 // ── CLIENTS
@@ -2433,6 +2701,7 @@ const ALL_VIEWS = [
   { key:'clients',      label:'Clients',          icon:'fa-users',      required:false },
   { key:'vehicules',    label:'Véhicules',        icon:'fa-car',        required:false },
   { key:'reparations',  label:'Réparations',      icon:'fa-wrench',     required:false },
+  { key:'entretien',    label:'Entretien',         icon:'fa-oil-can',    required:false },
   { key:'locations',    label:'Locations',        icon:'fa-key',        required:false },
   { key:'stock',        label:'Stock & Pièces',   icon:'fa-boxes',      required:false },
   { key:'employes',     label:'Employés',         icon:'fa-hard-hat',   required:false },
@@ -2443,9 +2712,9 @@ const ALL_VIEWS = [
 ];
 
 const ROLE_DEFAULTS = {
-  admin:        ['dashboard','clients','vehicules','reparations','locations','stock','employes','comptabilite','rapports','equipe','parametres'],
-  manager:      ['dashboard','clients','vehicules','reparations','locations','stock','employes','rapports'],
-  mechanic:     ['dashboard','reparations','stock'],
+  admin:        ['dashboard','clients','vehicules','reparations','entretien','locations','stock','employes','comptabilite','rapports','equipe','parametres'],
+  manager:      ['dashboard','clients','vehicules','reparations','entretien','locations','stock','employes','rapports'],
+  mechanic:     ['dashboard','reparations','entretien','stock'],
   accountant:   ['dashboard','comptabilite','rapports'],
   receptionist: ['dashboard','clients','vehicules','locations'],
 };

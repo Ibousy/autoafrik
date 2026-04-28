@@ -43,10 +43,10 @@ class User extends Authenticatable
 
     // Views each role can access
     public static array $viewPermissions = [
-        'owner'        => ['dashboard','clients','vehicules','reparations','locations','stock','employes','comptabilite','rapports','equipe','parametres'],
-        'admin'        => ['dashboard','clients','vehicules','reparations','locations','stock','employes','comptabilite','rapports','equipe','parametres'],
-        'manager'      => ['dashboard','clients','vehicules','reparations','locations','stock','employes','rapports'],
-        'mechanic'     => ['dashboard','reparations','stock'],
+        'owner'        => ['dashboard','clients','vehicules','reparations','entretien','locations','stock','employes','comptabilite','rapports','equipe','parametres'],
+        'admin'        => ['dashboard','clients','vehicules','reparations','entretien','locations','stock','employes','comptabilite','rapports','equipe','parametres'],
+        'manager'      => ['dashboard','clients','vehicules','reparations','entretien','locations','stock','employes','rapports'],
+        'mechanic'     => ['dashboard','reparations','entretien','stock'],
         'accountant'   => ['dashboard','comptabilite','rapports'],
         'receptionist' => ['dashboard','clients','vehicules','locations'],
     ];

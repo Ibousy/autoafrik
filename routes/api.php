@@ -5,6 +5,7 @@ use App\Http\Controllers\AppNotificationController;
 use App\Http\Controllers\ClientController;
 use App\Http\Controllers\CompanyController;
 use App\Http\Controllers\EmployeeController;
+use App\Http\Controllers\MaintenanceController;
 use App\Http\Controllers\MessageController;
 use App\Http\Controllers\RentalController;
 use App\Http\Controllers\RepairController;
@@ -46,6 +47,16 @@ Route::middleware(['web', 'auth'])->group(function () {
         Route::put('vehicles/{vehicle}',  [VehicleController::class, 'update']);
         Route::patch('vehicles/{vehicle}',[VehicleController::class, 'update']);
         Route::delete('vehicles/{vehicle}',[VehicleController::class, 'destroy']);
+    });
+
+    // ── Maintenances — owner, admin, manager, mechanic
+    Route::middleware('role:owner,admin,manager,mechanic')->group(function () {
+        Route::get('maintenances/vehicles-list',[MaintenanceController::class, 'vehiclesList']);
+        Route::get('maintenances/clients-list', [MaintenanceController::class, 'clientsList']);
+        Route::get('maintenances',              [MaintenanceController::class, 'index']);
+        Route::post('maintenances',             [MaintenanceController::class, 'store']);
+        Route::patch('maintenances/{maintenance}', [MaintenanceController::class, 'update']);
+        Route::delete('maintenances/{maintenance}',[MaintenanceController::class, 'destroy']);
     });
 
     // ── Repairs — owner, admin, manager, mechanic
