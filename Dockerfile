@@ -16,7 +16,7 @@ RUN npm run build
 # ──────────────────────────────────────────────
 # Stage 2 — PHP runtime
 # ──────────────────────────────────────────────
-FROM php:8.3-cli AS runtime
+FROM php:8.4-cli AS runtime
 WORKDIR /app
 
 # System dependencies + PHP extensions
