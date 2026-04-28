@@ -7,6 +7,16 @@ use App\Http\Controllers\RenewalController;
 use App\Http\Controllers\SuperAdminController;
 use Illuminate\Support\Facades\Route;
 
+// ── Landing page (public)
+Route::get('/', function () {
+    if (auth()->check()) {
+        $user = auth()->user();
+        if ($user->role === 'super_admin') return redirect()->route('superadmin.dashboard');
+        return redirect()->route('dashboard');
+    }
+    return view('welcome');
+})->name('home');
+
 // ── Auth (guest only)
 Route::middleware('guest')->group(function () {
     Route::get('/login', [AuthController::class, 'showLogin'])->name('login');
@@ -18,7 +28,7 @@ Route::middleware('guest')->group(function () {
 // ── Authenticated routes (garage users)
 Route::middleware('auth')->group(function () {
     Route::post('/logout', [AuthController::class, 'logout'])->name('logout');
-    Route::get('/', [DashboardController::class, 'index'])->name('dashboard');
+    Route::get('/dashboard', [DashboardController::class, 'index'])->name('dashboard');
 
     // Garage subscription renewal
     Route::get('/abonnement/renouveler',  [RenewalController::class, 'show'])->name('renewal.show');
